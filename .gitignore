@@ -1,0 +1,38 @@
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# IDEs
+.idea/
+.vscode/
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Dependency directories
+back/node_modules/
+front/node_modules/
+
+# Build output
+back/dist/
+front/dist/
+front/.next/
+front/build/
+
+# Env files
+back/.env
+front/.env
+.env
+
+# TypeScript
+**/*.tsbuildinfo
+
+# Testing
+coverage/
+
+# Others
+*.local
