@@ -1,6 +1,7 @@
 import {userService} from "../service/user.service.js";
 import {validationResult} from "express-validator";
 import {ApiError as apiError} from "../exceptions/api-errors.js";
+import {CLIENT_URL} from "../consts/consts.index.js";
 
 class UserController {
     async registration(req, res, next) {
@@ -54,7 +55,7 @@ class UserController {
         try {
             const activationLink = req.params.link
             await userService.activate(activationLink)
-            res.redirect(process.env.CLIENT_URL)
+            res.redirect(CLIENT_URL)
 
         } catch (e) {
             next(e)

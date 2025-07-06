@@ -1,8 +1,7 @@
 import {createTransport} from "nodemailer";
-import dotenv from "dotenv";
 import {google} from "googleapis";
+import {GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, SMTP_EMAIL} from "../consts/consts.index.js";
 
-dotenv.config();
 
 class MailService {
     #clientId;
@@ -14,15 +13,11 @@ class MailService {
     #oauth2Client;
 
     constructor() {
-        this.#clientId = process.env.GOOGLE_CLIENT_ID;
-        this.#clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-        this.#refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
-        this.#redirectUri = process.env.GOOGLE_REDIRECT_URI;
 
         this.#oauth2Client = new google.auth.OAuth2(
-            this.#clientId,
-            this.#clientSecret,
-            this.#redirectUri
+            GOOGLE_CLIENT_ID,
+            GOOGLE_CLIENT_SECRET,
+            GOOGLE_REDIRECT_URI
         );
     }
 
@@ -49,7 +44,7 @@ class MailService {
             service: "gmail",
             auth: {
                 type: "OAuth2",
-                user: process.env.SMTP_EMAIL,
+                user: SMTP_EMAIL,
                 clientId: this.#clientId,
                 clientSecret: this.#clientSecret,
                 refreshToken: this.#refreshToken,
@@ -65,7 +60,7 @@ class MailService {
         }
 
         await this.#transporter.sendMail({
-            from: process.env.SMTP_EMAIL,
+            from: SMTP_EMAIL,
             to,
             subject: "Account Activation",
             html: `

@@ -4,10 +4,9 @@ import {v4} from "uuid";
 import {mailService} from "./mail.service.js";
 import {tokenService} from "./token.service.js";
 import {UserDto} from "../dtos/suer.dto.js";
-import dotenv from "dotenv";
 import {ApiError} from "../exceptions/api-errors.js";
+import {PORT} from "../consts/consts.index.js";
 
-dotenv.config()
 
 class UserService {
 
@@ -19,7 +18,7 @@ class UserService {
         const hashPassword = await bcrypt.hash(password, 3)
         const activationLink = v4()
 
-        await mailService.sendActivationMail(email, `http://localhost:${process.env.PORT}/api/activate/${activationLink}`)
+        await mailService.sendActivationMail(email, `http://localhost:${PORT}/api/activate/${activationLink}`)
         const user = await User.create({email, password: hashPassword, activationLink})
 
 
