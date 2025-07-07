@@ -7,7 +7,6 @@ import {CLIENT_URL, DB_URL, PORT} from "./consts/consts.index.js";
 import cors from "cors";
 
 // CORS configuration
-const allowedOrigins = ['http://localhost:3751', 'http://192.168.31.47:3751'];
 const app = express()
 
 // app.use(req => {
@@ -16,7 +15,7 @@ const app = express()
 app.use(express.json())
 app.use(cookieParser())
 app.use(cors({
-    origin: CLIENT_URL,
+    origin: '*',
     credentials: true,
 }));
 app.use('/api', router)
