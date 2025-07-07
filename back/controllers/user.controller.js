@@ -24,6 +24,7 @@ class UserController {
 
     async login(req, res, next) {
         try {
+            console.log('asdfghjkl')
             const {email, password} = req.body
             const userData = await userService.login(email, password)
             res.cookie('refreshToken', userData.refreshToken, {
@@ -82,11 +83,21 @@ class UserController {
 
     async getUsers(req, res, next) {
         try {
-            console.log('asdfghjkl')
-            res.send([123])
+            const users = await userService.getAllUsers()
+            res.send(users)
         } catch (e) {
             next(e)
 
+        }
+    }
+
+    async getMe(req, res, next) {
+        try {
+            const user = req.user
+            const userData = await userService.getMe(user.id)
+            res.send(userData)
+        } catch (e) {
+            next(e)
         }
     }
 }

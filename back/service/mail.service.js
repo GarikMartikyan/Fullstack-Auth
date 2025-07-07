@@ -1,13 +1,15 @@
 import {createTransport} from "nodemailer";
 import {google} from "googleapis";
-import {GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, SMTP_EMAIL} from "../consts/consts.index.js";
+import {
+    GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET,
+    GOOGLE_REDIRECT_URI,
+    GOOGLE_REFRESH_TOKEN,
+    SMTP_EMAIL
+} from "../consts/consts.index.js";
 
 
 class MailService {
-    #clientId;
-    #clientSecret;
-    #refreshToken;
-    #redirectUri;
     #accessToken;
     #transporter;
     #oauth2Client;
@@ -23,7 +25,7 @@ class MailService {
 
     async #generateAccessToken() {
         this.#oauth2Client.setCredentials({
-            refresh_token: this.#refreshToken
+            refresh_token: GOOGLE_REFRESH_TOKEN
         });
 
         const accessTokenResponse = await this.#oauth2Client.getAccessToken();
@@ -45,9 +47,9 @@ class MailService {
             auth: {
                 type: "OAuth2",
                 user: SMTP_EMAIL,
-                clientId: this.#clientId,
-                clientSecret: this.#clientSecret,
-                refreshToken: this.#refreshToken,
+                clientId: GOOGLE_CLIENT_ID,
+                clientSecret: GOOGLE_CLIENT_SECRET,
+                refreshToken: GOOGLE_REFRESH_TOKEN,
                 accessToken: accessToken
             }
         });
