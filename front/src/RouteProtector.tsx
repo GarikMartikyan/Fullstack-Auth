@@ -12,6 +12,12 @@ export function RouteProtector({ routeType }: { routeType: 'public' | 'private' 
     skip: !token,
   });
 
+  console.log(user);
+
+  if (isFetching) {
+    return <Loader />;
+  }
+
   const isAuthenticated = !!token && !!user;
 
   if (isPrivate && !isAuthenticated) {
@@ -20,10 +26,6 @@ export function RouteProtector({ routeType }: { routeType: 'public' | 'private' 
 
   if (!isPrivate && isAuthenticated) {
     return <Navigate to={routes.dashboard} replace />;
-  }
-
-  if (isFetching) {
-    return <Loader />;
   }
 
   return <Outlet />;

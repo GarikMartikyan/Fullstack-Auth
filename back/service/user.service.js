@@ -1,11 +1,11 @@
 import {User} from "../models/user.model.js";
 import bcrypt from "bcrypt";
 import {v4} from "uuid";
-import {mailService} from "./mail.service.js";
 import {tokenService} from "./token.service.js";
 import {UserDto} from "../dtos/suer.dto.js";
 import {ApiError} from "../exceptions/api-errors.js";
 import {getActivationLink} from "../helpers/index.helpers.js";
+import {mailService} from "./mail.service.js";
 
 
 class UserService {
@@ -16,10 +16,10 @@ class UserService {
             throw ApiError.BadRequest(`User with email ${email} already exists`)
         }
         const hashPassword = await bcrypt.hash(password, 3)
-        const linkPattern = v4()
-        const activationLink = getActivationLink(linkPattern)
+        const activationLink = v4()
+        const activationFullLink = getActivationLink(activationLink)
 
-        await mailService.sendActivationMail(email, activationLink)
+        await mailService.sendActivationMail(email, activationFullLink)
         const user = await User.create({email, password: hashPassword, activationLink})
 
         const userDto = new UserDto(user)

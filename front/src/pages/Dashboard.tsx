@@ -8,7 +8,7 @@ import { showMessage } from '../store/slices/messageSlice.ts';
 export function Dashboard() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { data: me, isFetching: isFetchingMe } = useMeQuery();
+  const { currentData: me, isFetching: isFetchingMe } = useMeQuery();
   const { data: users, isFetching: isFetchingUsers } = useGetUsersQuery();
   const [logoutUser, { isLoading: isLogoutLoading }] = useLogoutMutation();
 
