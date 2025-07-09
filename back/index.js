@@ -6,16 +6,12 @@ import {errorMiddleware} from "./middlewares/error.middleware.js";
 import {CLIENT_URL, DB_URL, PORT} from "./consts/consts.index.js";
 import cors from "cors";
 
-// CORS configuration
 const app = express()
 
-// app.use(req => {
-//     console.log(req)
-// })
 app.use(express.json())
 app.use(cookieParser())
 app.use(cors({
-    origin: '*',
+    origin: CLIENT_URL,
     credentials: true,
 }));
 app.use('/api', router)

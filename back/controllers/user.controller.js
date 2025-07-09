@@ -2,6 +2,7 @@ import {userService} from "../service/user.service.js";
 import {validationResult} from "express-validator";
 import {ApiError as apiError} from "../exceptions/api-errors.js";
 import {CLIENT_URL} from "../consts/consts.index.js";
+import {UserDto} from "../dtos/suer.dto.js";
 
 class UserController {
     async registration(req, res, next) {
@@ -14,7 +15,9 @@ class UserController {
             const userData = await userService.registration(email, password)
             res.cookie('refreshToken', userData.refreshToken, {
                 maxAge: 30 * 24 * 60 * 60 * 1000,
-                httpOnly: true
+                httpOnly: true,
+                secure: false,
+                sameSite: 'None'
             })
             res.send(userData)
         } catch (e) {
@@ -24,12 +27,13 @@ class UserController {
 
     async login(req, res, next) {
         try {
-            console.log('asdfghjkl')
             const {email, password} = req.body
             const userData = await userService.login(email, password)
             res.cookie('refreshToken', userData.refreshToken, {
                 maxAge: 30 * 24 * 60 * 60 * 1000,
-                httpOnly: true
+                httpOnly: true,
+                secure: false,
+                sameSite: 'None'
             })
             res.send(userData)
 
@@ -71,7 +75,9 @@ class UserController {
             const userData = await userService.refresh(refreshToken)
             res.cookie('refreshToken', userData.refreshToken, {
                 maxAge: 30 * 24 * 60 * 60 * 1000,
-                httpOnly: true
+                httpOnly: true,
+                secure: false,
+                sameSite: 'None'
             })
             res.send(userData)
 
@@ -95,7 +101,8 @@ class UserController {
         try {
             const user = req.user
             const userData = await userService.getMe(user.id)
-            res.send(userData)
+            const userDto = new UserDto(userData)
+            res.send(userDto)
         } catch (e) {
             next(e)
         }

@@ -1,13 +1,11 @@
 import { Router } from './Router.tsx';
-import { MessageProvider } from './providers/MessageProvider.tsx';
-import { UserProvider } from './providers/UserProvider.tsx';
+import { MessageListener } from './components/MessageListener.tsx';
 
 export function App() {
   return (
-    <MessageProvider>
-      <UserProvider>
-        <Router />
-      </UserProvider>
-    </MessageProvider>
+    <>
+      <MessageListener />
+      <Router />
+    </>
   );
 }

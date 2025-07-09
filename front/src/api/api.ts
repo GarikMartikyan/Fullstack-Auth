@@ -1,62 +1,127 @@
-import axios from 'axios';
-import { getToken } from '../services/localstorage.service.ts';
+import type { FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
+import {
+  type BaseQueryFn,
+  createApi,
+  type FetchArgs,
+  fetchBaseQuery,
+} from '@reduxjs/toolkit/query/react';
+import type {
+  IErrorResponse,
+  IUserData,
+  UserLoginRequest,
+  UserLoginResponse,
+  UserRegisterRequest,
+  UserRegisterResponse,
+} from '../types/interfaces.ts';
+import { getToken, removeToken, setToken } from '../services/localstorage.service.ts';
 import { API_URL } from '../consts/consts.ts';
-import type { IUserData, IUserLoginRequest, IUserRegisterRequest } from '../types/interfaces.ts';
+import { showMessage } from '../store/slices/messageSlice.ts';
 
-const api = axios.create({
-  withCredentials: true,
-  baseURL: API_URL,
-  timeout: 100000,
-});
-
-api.interceptors.request.use((config) => {
-  const token = getToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const status = error.response?.status;
-    if (status === 401 && error.config && !error.config._isRetry) {
-      error.config._isRetry = true;
-      const response = await axios.get(`${API_URL}/refresh`, { withCredentials: true });
-      if (response.data.accessToken) {
-        localStorage.setItem('token', response.data.accessToken);
-        return axios.request(error.config);
-      }
+const baseQuery = fetchBaseQuery({
+  baseUrl: API_URL, // your API URL
+  prepareHeaders: (headers) => {
+    const token = getToken();
+    if (token) {
+      headers.set('Authorization', `Bearer ${token}`);
     }
-
-    return Promise.reject(error);
+    return headers;
   },
-);
+});
 
-export default api;
+export const baseQueryWithReauth: BaseQueryFn<
+  string | FetchArgs,
+  unknown,
+  FetchBaseQueryError
+> = async (args, api, extraOptions) => {
+  let result = await baseQuery(args, api, extraOptions);
 
-export const fetchMe = async () => {
-  const { data } = await api.get<IUserData>('/me');
-  return data;
+  if (result.error) {
+    if (result.error.status === 401) {
+      const refreshResult = await baseQuery('/refresh', api, extraOptions);
+
+      if (refreshResult.data && (refreshResult.data as UserLoginResponse).accessToken) {
+        const newAccessToken = (refreshResult.data as UserLoginResponse).accessToken;
+
+        setToken(newAccessToken);
+
+        result = await baseQuery(args, api, extraOptions);
+        if (result.error?.status === 401) {
+          removeToken();
+        }
+      } else {
+        removeToken();
+      }
+    } else {
+      api.dispatch(
+        showMessage({
+          type: 'error',
+          content: (result.error.data as IErrorResponse)?.message,
+        }),
+      );
+    }
+  }
+  return result;
 };
 
-export const fetchUsers = async () => {
-  const { data } = await api.get<IUserData[]>('/users');
-  return data;
-};
+export const api = createApi({
+  reducerPath: 'api',
+  baseQuery: baseQueryWithReauth,
+  refetchOnReconnect: true,
+  tagTypes: ['User', 'Me'],
+  endpoints: (builder) => ({
+    login: builder.mutation<UserLoginResponse, UserLoginRequest>({
+      query: (body) => ({
+        url: '/login',
+        method: 'POST',
+        body,
+      }),
 
-export const createUser = async (payload: IUserRegisterRequest) => {
-  const { data } = await api.post('/registration', payload);
-  return data;
-};
+      async onQueryStarted(_, { queryFulfilled }) {
+        const { data } = await queryFulfilled;
+        const { accessToken } = data;
+        setToken(accessToken);
+      },
+    }),
+    register: builder.mutation<UserRegisterResponse, UserRegisterRequest>({
+      query: (body) => ({
+        url: '/registration',
+        method: 'POST',
+        body,
+      }),
 
-export const login = async ({ email, password }: IUserLoginRequest) => {
-  const { data } = await api.post('/login', { email, password });
-  return data;
-};
+      async onQueryStarted(_, { queryFulfilled }) {
+        const { data } = await queryFulfilled;
+        const { accessToken } = data;
+        setToken(accessToken);
+      },
+    }),
+    getUsers: builder.query<IUserData[], void>({
+      query: () => '/users',
+      providesTags: ['User'],
+    }),
+    me: builder.query<IUserData, void>({
+      query: () => '/me',
+      providesTags: ['Me'],
+    }),
+    logout: builder.mutation<void, void>({
+      query: () => ({
+        url: '/logout',
+        method: 'POST',
+        invalidatesTags: ['User', 'Me'],
+      }),
 
-export const logout = async () => {
-  const { data } = await api.post('/logout');
-  return data;
-};
+      async onQueryStarted(_, { queryFulfilled }) {
+        await queryFulfilled;
+        removeToken();
+      },
+    }),
+  }),
+});
+
+export const {
+  useLoginMutation,
+  useLogoutMutation,
+  useRegisterMutation,
+  useGetUsersQuery,
+  useMeQuery,
+} = api;

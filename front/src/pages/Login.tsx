@@ -2,19 +2,25 @@ import { Button, Flex, Form, Input, Layout } from 'antd';
 import type { IUserLoginForm } from '../types/interfaces.ts';
 import { Link, useNavigate } from 'react-router';
 import { routes } from '../consts/routes.ts';
-import { useMessage } from '../contexts/MessageContext.tsx';
-import { useApiMutation } from '../hooks/useApiMutation.ts';
-import { login } from '../api/api.ts';
+
+import { useLoginMutation } from '../api/api.ts';
+import { useDispatch } from 'react-redux';
+import { showMessage } from '../store/slices/messageSlice.ts';
 
 export function Login() {
-  const { success } = useMessage();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const { mutate, isLoading } = useApiMutation(login);
+  const [login, { isLoading: isLoginLoading }] = useLoginMutation();
 
   const onFinish = async (values: IUserLoginForm) => {
-    await mutate(values);
-    success('Logged in successfully');
+    await login(values).unwrap();
+    dispatch(
+      showMessage({
+        type: 'success',
+        content: 'Logged in successfully',
+      }),
+    );
     navigate(routes.dashboard);
   };
   return (
@@ -26,7 +32,11 @@ export function Login() {
         alignItems: 'center',
       }}
     >
-      <Form<IUserLoginForm> onFinish={onFinish} style={{ maxWidth: 400, width: '100%' }}>
+      <Form<IUserLoginForm>
+        onFinish={onFinish}
+        style={{ maxWidth: 400, width: '100%' }}
+        autoComplete="on"
+      >
         <Form.Item name="email" rules={[{ required: true, message: 'Email is required' }]}>
           <Input placeholder="Email" />
         </Form.Item>
@@ -37,12 +47,12 @@ export function Login() {
             { min: 6, message: 'Password is too short, min length is 6' },
           ]}
         >
-          <Input.Password placeholder="Password" />
+          <Input.Password autoComplete="on" placeholder="Password" />
         </Form.Item>
         <Form.Item noStyle>
           <Flex vertical align={'center'} justify={'center'}>
             <Button
-              loading={isLoading}
+              loading={isLoginLoading}
               style={{ paddingInline: 40 }}
               type="primary"
               htmlType="submit"

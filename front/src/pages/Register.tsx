@@ -2,41 +2,37 @@ import { Button, Flex, Form, Input, Layout } from 'antd';
 import type { IUserRegisterForm } from '../types/interfaces.ts';
 import { Link, useNavigate } from 'react-router';
 import { routes } from '../consts/routes.ts';
-import { useMessage } from '../contexts/MessageContext.tsx';
-import api, { createUser } from '../api/api.ts';
-import { useApiMutation } from '../hooks/useApiMutation.ts';
-import { useEffect } from 'react';
-import { API_URL } from '../consts/consts.ts';
+import { useRegisterMutation } from '../api/api.ts';
+import { useDispatch } from 'react-redux';
+import { showMessage } from '../store/slices/messageSlice.ts';
 
 export function Register() {
-  console.log({ API_URL });
-  const { error, success } = useMessage();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const { mutate, isLoading } = useApiMutation(createUser);
-
-  useEffect(() => {
-    // console.log('This is the response:');
-    api.post(
-      '/login',
-      { email: 'garikmartikyan03@gmail.com', password: 'asdasd' },
-      {
-        withCredentials: true,
-      },
-    );
-  }, []);
+  const [registerUser, { isLoading }] = useRegisterMutation();
 
   const onFinish = async (values: IUserRegisterForm) => {
     if (values.password !== values.confirmPassword) {
-      return error('Passwords do not match');
+      return dispatch(
+        showMessage({
+          type: 'error',
+          content: 'Passwords do not match',
+        }),
+      );
     }
 
-    await mutate({
+    await registerUser({
       email: values.email,
       password: values.password,
-    });
+    }).unwrap();
 
-    success('Registered successfully');
+    dispatch(
+      showMessage({
+        type: 'success',
+        content: 'Registered successfully',
+      }),
+    );
     navigate(routes.dashboard);
   };
 
@@ -65,7 +61,7 @@ export function Register() {
             { min: 6, message: 'Password must be at least 6 characters' },
           ]}
         >
-          <Input.Password placeholder="Password" />
+          <Input.Password autoComplete="on" placeholder="Password" />
         </Form.Item>
         <Form.Item
           name="confirmPassword"
@@ -74,7 +70,7 @@ export function Register() {
             { min: 6, message: 'Password must be at least 6 characters' },
           ]}
         >
-          <Input.Password placeholder="Confirm Password" />
+          <Input.Password autoComplete="on" placeholder="Confirm Password" />
         </Form.Item>
         <Form.Item noStyle>
           <Flex vertical align={'center'} justify={'center'}>

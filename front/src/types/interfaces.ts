@@ -4,20 +4,25 @@ export interface IUserRegisterForm {
   confirmPassword: string;
 }
 
-export interface IUserRegisterRequest {
-  email: string;
-  password: string;
-}
-
 export interface IUserLoginForm {
   email: string;
   password: string;
 }
 
-export interface IUserLoginRequest {
+export type UserRegisterRequest = {
   email: string;
   password: string;
-}
+};
+
+export type UserLoginRequest = UserRegisterRequest;
+
+export type UserRegisterResponse = {
+  accessToken: string;
+  refreshToken: string;
+  user: IUserData;
+};
+
+export type UserLoginResponse = UserRegisterResponse;
 
 export interface IUserData {
   email: string;
@@ -26,8 +31,7 @@ export interface IUserData {
   activationLink: string;
 }
 
-export interface IUserResponse {
-  user: IUserData;
-  accessToken: string;
-  refreshToken: string;
+export interface IErrorResponse {
+  message: string;
+  errors: Record<string, string>;
 }
