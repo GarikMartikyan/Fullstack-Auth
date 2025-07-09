@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router';
+import { Navigate, Route, Routes } from 'react-router';
 import { routes } from './consts/routes.ts';
 import { Register } from './pages/Register.tsx';
 import { Login } from './pages/Login.tsx';
@@ -15,6 +15,7 @@ export function Router() {
       <Route element={<RouteProtector routeType="private" />}>
         <Route path={routes.dashboard} element={<Dashboard />} />
       </Route>
+      <Route path="*" element={<Navigate to={routes.dashboard} replace />} />
     </Routes>
   );
 }

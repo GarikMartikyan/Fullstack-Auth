@@ -32,19 +32,19 @@ export const baseQueryWithReauth: BaseQueryFn<
   string | FetchArgs,
   unknown,
   FetchBaseQueryError
-> = async (args, api, extraOptions) => {
-  let result = await baseQuery(args, api, extraOptions);
+> = async (args, baseApi, extraOptions) => {
+  let result = await baseQuery(args, baseApi, extraOptions);
 
   if (result.error) {
     if (result.error.status === 401) {
-      const refreshResult = await baseQuery('/refresh', api, extraOptions);
+      const refreshResult = await baseQuery('/refresh', baseApi, extraOptions);
 
       if (refreshResult.data && (refreshResult.data as UserLoginResponse).accessToken) {
         const newAccessToken = (refreshResult.data as UserLoginResponse).accessToken;
 
         setToken(newAccessToken);
 
-        result = await baseQuery(args, api, extraOptions);
+        result = await baseQuery(args, baseApi, extraOptions);
         if (result.error?.status === 401) {
           removeToken();
         }
@@ -52,12 +52,13 @@ export const baseQueryWithReauth: BaseQueryFn<
         removeToken();
       }
     } else {
-      api.dispatch(
+      baseApi.dispatch(
         showMessage({
           type: 'error',
           content: (result.error.data as IErrorResponse)?.message,
         }),
       );
+      baseApi.dispatch(api.util.resetApiState());
     }
   }
   return result;
@@ -110,9 +111,10 @@ export const api = createApi({
         invalidatesTags: ['User', 'Me'],
       }),
 
-      async onQueryStarted(_, { queryFulfilled }) {
+      async onQueryStarted(_, { queryFulfilled, dispatch }) {
         await queryFulfilled;
         removeToken();
+        dispatch(api.util.resetApiState());
       },
     }),
   }),

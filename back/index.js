@@ -18,7 +18,6 @@ app.use('/api', router)
 app.use(errorMiddleware)
 
 const start = async () => {
-    console.log(CLIENT_URL)
     try {
         await connect(DB_URL)
         app.listen(PORT, () => console.log(`DB connected, Server started on http://localhost:${PORT}`))
