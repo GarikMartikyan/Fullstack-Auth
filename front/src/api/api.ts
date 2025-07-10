@@ -18,7 +18,9 @@ import { API_URL } from '../consts/consts.ts';
 import { showMessage } from '../store/slices/messageSlice.ts';
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: API_URL, // your API URL
+  baseUrl: API_URL,
+  mode: 'cors',
+  credentials: 'include',
   prepareHeaders: (headers) => {
     const token = getToken();
     if (token) {
@@ -36,7 +38,10 @@ export const baseQueryWithReauth: BaseQueryFn<
   let result = await baseQuery(args, baseApi, extraOptions);
 
   if (result.error) {
-    if (result.error.status === 401) {
+    console.log(result);
+    if (result.error.status === 'FETCH_ERROR') {
+      removeToken();
+    } else if (result.error.status === 401) {
       const refreshResult = await baseQuery('/refresh', baseApi, extraOptions);
 
       if (refreshResult.data && (refreshResult.data as UserLoginResponse).accessToken) {

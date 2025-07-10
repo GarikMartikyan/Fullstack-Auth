@@ -3,16 +3,10 @@ import { routes } from './consts/routes.ts';
 import { useMeQuery } from './api/api.ts';
 import { Loader } from './components/Loader.tsx';
 import { getToken } from './services/localstorage.service.ts';
-import { useEffect } from 'react';
 
 export function RouteProtector({ routeType }: { routeType: 'public' | 'private' }) {
   const isPrivate = routeType === 'private';
   const token = getToken();
-  useEffect(() => {
-    return () => {
-      console.log('unmount');
-    };
-  }, []);
 
   const { currentData: user, isFetching } = useMeQuery(undefined, {
     skip: !token,
